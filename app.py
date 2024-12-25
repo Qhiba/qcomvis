@@ -1,23 +1,14 @@
-from flask import Flask, render_template, request
-import webbrowser
-import logging
-import os
+import gradio as gr
+
+def greet(name, intensity):
+    return "Hello, " + name + "!" * int(intensity)
 
 
-app = Flask(__name__)
+interface = gr.Interface(
+    fn=greet,
+    inputs=["text", "slider"],
+    outputs=["text"]
+)
 
 
-@app.route('/')
-def home():
-    return render_template('index.html', status='Active')
-
-
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
-
-if __name__ == '__main__':
-    try:
-        if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
-            webbrowser.open("http://localhost:5000")    
-        app.run()
-    except Exception as e:
-        logging.error("ERROR: ", exc_info=True)
+app = interface.app

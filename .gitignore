@@ -1,6 +1,9 @@
 # Python virtual environment
 .env/
 
+# Gradio Flags
+.gradio/
+
 # Python cache files
 __pycache__/
 *.py[cod]
