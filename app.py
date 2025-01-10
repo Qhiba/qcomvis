@@ -1,23 +1,39 @@
-import gradio as gr
+from ultralytics import YOLO
 
-def greet(name, intensity):
-    return "Hello, " + name + "!" * int(intensity)
+import gradio as gr
+import numpy as np
+import supervision as sv
+
+import cv2
+
+model_path = "./models/yolov8n.pt"
+model = YOLO(model_path)
+
+
+def detect_image(input_img):
+    #img = cv2.imread(input_img)
+    result = model(input_img)[0]
+    bbox_annotation = sv.BoxAnnotator()
+    label_annotation = sv.LabelAnnotator()
+
+    detections = sv.Detections.from_ultralytics(result)
+
+    labels = [
+        f"{model.names[class_id]} {confidence}"
+        for class_id, confidence in zip(detections.class_id, detections.confidence)
+    ]
+
+    annotated_img = bbox_annotation.annotate(scene=input_img.copy(), detections=detections)
+    annotated_img = label_annotation.annotate(scene=annotated_img, detections=detections, labels=labels)
+    return annotated_img
+
 
 with gr.Blocks() as interface:
-    gr.Markdown('# Greetings from Gradio!')
-    inp = gr.Textbox(placeholder="What is your name?")
-    out = gr.Textbox()
-
-    inp.change(
-        fn = lambda x: f"Welcome, {x}",
-        inputs = inp,
-        outputs = out
-    )
-
+    gr.Markdown("# Detect Image")
     gr.Interface(
-        fn=greet,
-        inputs=['text', 'slider'],
-        outputs=['text']
+        fn=detect_image,
+        inputs=gr.Image(),
+        outputs="image"
     )
 
 
