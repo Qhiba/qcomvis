@@ -28,3 +28,6 @@ Thumbs.db
 dist/
 build/
 *.spec
+
+# Other-Folder
+images/*
