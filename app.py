@@ -7,7 +7,8 @@ import supervision as sv
 
 model_path = "./models/yolov8n.pt"
 model = YOLO(model_path)
-
+classes_names = {name: id for id, name in model.names.items()}
+model_classes_name = [name for name in classes_names.keys()]
 
 def detect_image(input_img):
     result = model(input_img)[0]
@@ -33,20 +34,17 @@ def detect_image(input_img):
 
 with gr.Blocks() as interface:
     gr.Markdown("# Detect Image")
-    gr.Interface(
-        fn=detect_image,
-        inputs=gr.Image(),
-        outputs=[
-            "image",
-            gr.Dataframe(
-                headers=["Class", "Locations", "Confidence"],
-                datatype=["str", "str", "str"],
-                row_count=1,
-                col_count=(3, "fixed")
-            ),
-            ]
-    )
+    class_checkboxes = gr.Checkboxgroup(model_classes_name, label="Classes", info="Filter")
+    input_image = gr.Image(label="Input Image")
+    detect_button = gr.Button("Process")
 
+    output_image = gr.Image(label="Output Image", interactive=False)
+    detected_objects = gr.Dataframe(
+                            headers=["Class", "Locations", "Confidence"],
+                            datatype=["str", "str", "str"],
+                            row_count=1,
+                            col_count=(3, "fixed")
+                        )
 
 
 if __name__ == "__main__":
